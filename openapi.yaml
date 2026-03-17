@@ -79,7 +79,7 @@ paths:
                         company:
                           type: string
 
-  /query:
+  /query/detail:
     post:
       operationId: queryByProjectId
       summary: 按项目ID精确查询

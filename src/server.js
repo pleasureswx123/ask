@@ -46,7 +46,7 @@ app.get('/projects', async (req, res) => {
  *   - company: "凡高" | "文森特"
  *   - queryType: "invoice" | "payment" | "cost"
  */
-app.post('/query', async (req, res) => {
+app.post('/query/detail', async (req, res) => {
   const { projectId, company, queryType } = req.body;
 
   if (!projectId || !company || !queryType) {
@@ -118,7 +118,7 @@ const server = app.listen(PORT, "0.0.0.0", () => {
   console.log(`   GET  /health          健康检查`);
   console.log(`   GET  /projects        搜索项目列表`);
   console.log(`   POST /query/search    一体化查询（Coze 推荐）`);
-  console.log(`   POST /query           按项目ID精确查询`);
+  console.log(`   POST /query/detail    按项目ID精确查询`);
 });
 
 // 优雅退出

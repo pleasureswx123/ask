@@ -1,123 +1,104 @@
-openapi: 3.0.1
 info:
-  title: 项目信息查询服务
-  description: 查询凡高和文森特项目的开票、回款、成本情况
-  version: 1.0.0
-servers:
-  - url: https://sd6sfgfrafnohot0pt020.apigateway-cn-beijing.volceapi.com
-    description: veFaaS 生产服务器
-
+    description: 查询凡高和文森特项目的开票、回款、成本情况
+    title: 项目信息查询服务
+    version: v1
+openapi: 3.0.1
 paths:
-  /query/search:
-    post:
-      operationId: searchAndQuery
-      summary: 搜索项目并查询信息
-      description: |
-        根据项目关键词和查询类型，搜索匹配项目并返回结果。
-        - 唯一匹配时直接返回查询结果
-        - 多个匹配时返回项目列表供用户选择
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - keyword
-                - queryType
-              properties:
-                keyword:
-                  type: string
-                  description: 项目关键词，如"大连紫悦府"
-                  example: 大连紫悦府
-                queryType:
-                  type: string
-                  enum: [invoice, payment, cost]
-                  description: 查询类型，invoice=开票，payment=回款，cost=成本
-                  example: invoice
-      responses:
-        '200':
-          description: 查询成功
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  type:
-                    type: string
-                    description: "结果类型：single=唯一匹配，multiple=多个匹配，not_found=未找到"
-                  result:
-                    type: string
-                    description: 格式化后的查询结果文本（type=single时返回）
-                  message:
-                    type: string
-                    description: 提示信息（type=not_found时返回）
-                  project:
-                    type: object
-                    description: 匹配到的项目信息（type=single时返回）
-                    properties:
-                      id:
-                        type: string
-                      name:
-                        type: string
-                      fullName:
-                        type: string
-                      company:
-                        type: string
-                  projects:
-                    type: array
-                    description: 匹配到的项目列表（type=multiple时返回）
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                        name:
-                          type: string
-                        fullName:
-                          type: string
-                        company:
-                          type: string
-
-  /query/detail:
-    post:
-      operationId: queryByProjectId
-      summary: 按项目ID精确查询
-      description: 已知项目ID和所属公司时，直接查询指定类型的信息
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - projectId
-                - company
-                - queryType
-              properties:
-                projectId:
-                  type: string
-                  description: 项目ID（从搜索接口获取）
-                  example: "123456789"
-                company:
-                  type: string
-                  enum: [凡高, 文森特]
-                  description: 所属公司
-                queryType:
-                  type: string
-                  enum: [invoice, payment, cost]
-                  description: 查询类型
-      responses:
-        '200':
-          description: 查询成功
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  result:
-                    type: string
-                    description: 格式化后的查询结果文本
+    /query/search:
+        post:
+            operationId: searchAndQuery
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            properties:
+                                keyword:
+                                    description: 项目关键词，如大连紫悦府
+                                    type: string
+                                queryType:
+                                    description: 查询类型，invoice=开票，payment=回款，cost=成本
+                                    type: string
+                            type: object
+            responses:
+                "200":
+                    content:
+                        application/json:
+                            schema:
+                                properties:
+                                    type:
+                                        description: 结果类型，single=唯一匹配，multiple=多个匹配，not_found=未找到
+                                        type: string
+                                    result:
+                                        description: 格式化后的查询结果文本，type=single时返回
+                                        type: string
+                                    message:
+                                        description: 提示信息，type=not_found时返回
+                                        type: string
+                                    project:
+                                        description: 匹配到的项目信息，type=single时返回
+                                        properties:
+                                            id:
+                                                type: string
+                                            name:
+                                                type: string
+                                            fullName:
+                                                type: string
+                                            company:
+                                                type: string
+                                        type: object
+                                    projects:
+                                        description: 匹配到的项目列表，type=multiple时返回
+                                        items:
+                                            properties:
+                                                id:
+                                                    type: string
+                                                name:
+                                                    type: string
+                                                fullName:
+                                                    type: string
+                                                company:
+                                                    type: string
+                                            type: object
+                                        type: array
+                                type: object
+                    description: 查询成功
+                default:
+                    description: ""
+            summary: 搜索项目并查询信息
+    /query/detail:
+        post:
+            operationId: queryByProjectId
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            properties:
+                                projectId:
+                                    description: 项目ID，从搜索接口获取
+                                    type: string
+                                company:
+                                    description: 所属公司，凡高或文森特
+                                    type: string
+                                queryType:
+                                    description: 查询类型，invoice=开票，payment=回款，cost=成本
+                                    type: string
+                            type: object
+            responses:
+                "200":
+                    content:
+                        application/json:
+                            schema:
+                                properties:
+                                    result:
+                                        description: 格式化后的查询结果文本
+                                        type: string
+                                type: object
+                    description: 查询成功
+                default:
+                    description: ""
+            summary: 按项目ID精确查询
+servers:
+    - url: https://sd6sfgfrafnohot0pt020.apigateway-cn-beijing.volceapi.com
 
 
 

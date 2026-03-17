@@ -1,0 +1,141 @@
+openapi: 3.0.1
+info:
+  title: 项目信息查询服务
+  description: 查询凡高和文森特项目的开票、回款、成本情况
+  version: 1.0.0
+servers:
+  - url: https://你的域名或IP:3000
+    description: 生产服务器（部署后替换为实际地址）
+
+paths:
+  /query/search:
+    post:
+      operationId: searchAndQuery
+      summary: 搜索项目并查询信息
+      description: |
+        根据项目关键词和查询类型，搜索匹配项目并返回结果。
+        - 唯一匹配时直接返回查询结果
+        - 多个匹配时返回项目列表供用户选择
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - keyword
+                - queryType
+              properties:
+                keyword:
+                  type: string
+                  description: 项目关键词，如"大连紫悦府"
+                  example: 大连紫悦府
+                queryType:
+                  type: string
+                  enum: [invoice, payment, cost]
+                  description: 查询类型，invoice=开票，payment=回款，cost=成本
+                  example: invoice
+      responses:
+        '200':
+          description: 查询成功
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/SingleResult'
+                  - $ref: '#/components/schemas/MultipleResult'
+                  - $ref: '#/components/schemas/NotFoundResult'
+
+  /query:
+    post:
+      operationId: queryByProjectId
+      summary: 按项目ID精确查询
+      description: 已知项目ID和所属公司时，直接查询指定类型的信息
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - projectId
+                - company
+                - queryType
+              properties:
+                projectId:
+                  type: string
+                  description: 项目ID（从搜索接口获取）
+                  example: "123456789"
+                company:
+                  type: string
+                  enum: [凡高, 文森特]
+                  description: 所属公司
+                queryType:
+                  type: string
+                  enum: [invoice, payment, cost]
+                  description: 查询类型
+      responses:
+        '200':
+          description: 查询成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    description: 格式化后的查询结果文本
+
+components:
+  schemas:
+    ProjectItem:
+      type: object
+      properties:
+        id:
+          type: string
+          description: 项目ID
+        name:
+          type: string
+          description: 项目简称
+        fullName:
+          type: string
+          description: 项目全称
+        company:
+          type: string
+          enum: [凡高, 文森特]
+          description: 所属公司
+
+    SingleResult:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [single]
+        project:
+          $ref: '#/components/schemas/ProjectItem'
+        result:
+          type: string
+          description: 格式化后的查询结果文本
+
+    MultipleResult:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [multiple]
+        projects:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectItem'
+          description: 匹配到的项目列表，需让用户选择
+
+    NotFoundResult:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [not_found]
+        message:
+          type: string
+          description: 未找到项目的提示信息
+

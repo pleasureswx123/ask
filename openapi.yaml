@@ -16,7 +16,7 @@ paths:
                                     description: 项目关键词，如大连紫悦府
                                     type: string
                                 queryType:
-                                    description: 查询类型，invoice=开票，payment=回款，cost=成本
+                                    description: 查询类型，必须传英文值，invoice=开票，payment=回款，cost=成本，只能传invoice或payment或cost
                                     type: string
                             type: object
             responses:
@@ -80,7 +80,7 @@ paths:
                                     description: 所属公司，凡高或文森特
                                     type: string
                                 queryType:
-                                    description: 查询类型，invoice=开票，payment=回款，cost=成本
+                                    description: 查询类型，必须传英文值，invoice=开票，payment=回款，cost=成本，只能传invoice或payment或cost
                                     type: string
                             type: object
             responses:

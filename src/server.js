@@ -10,7 +10,7 @@ dotenv.config({ override: true });
 const app = express();
 app.use(express.json());
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8000;
 
 /**
  * 健康检查
@@ -113,7 +113,7 @@ app.post('/query/search', async (req, res) => {
 });
 
 // 启动服务
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, "0.0.0.0", () => {
   console.log(`✅ 项目信息查询服务已启动：http://localhost:${PORT}`);
   console.log(`   GET  /health          健康检查`);
   console.log(`   GET  /projects        搜索项目列表`);

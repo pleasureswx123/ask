@@ -4,8 +4,8 @@ info:
   description: 查询凡高和文森特项目的开票、回款、成本情况
   version: 1.0.0
 servers:
-  - url: https://你的域名或IP:3000
-    description: 生产服务器（部署后替换为实际地址）
+  - url: https://sd6sfgfrafnohot0pt020.apigateway-cn-beijing.volceapi.com
+    description: veFaaS 生产服务器
 
 paths:
   /query/search:

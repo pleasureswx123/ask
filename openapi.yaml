@@ -41,10 +41,43 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/SingleResult'
-                  - $ref: '#/components/schemas/MultipleResult'
-                  - $ref: '#/components/schemas/NotFoundResult'
+                type: object
+                properties:
+                  type:
+                    type: string
+                    description: "结果类型：single=唯一匹配，multiple=多个匹配，not_found=未找到"
+                  result:
+                    type: string
+                    description: 格式化后的查询结果文本（type=single时返回）
+                  message:
+                    type: string
+                    description: 提示信息（type=not_found时返回）
+                  project:
+                    type: object
+                    description: 匹配到的项目信息（type=single时返回）
+                    properties:
+                      id:
+                        type: string
+                      name:
+                        type: string
+                      fullName:
+                        type: string
+                      company:
+                        type: string
+                  projects:
+                    type: array
+                    description: 匹配到的项目列表（type=multiple时返回）
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        fullName:
+                          type: string
+                        company:
+                          type: string
 
   /query:
     post:
@@ -86,56 +119,5 @@ paths:
                     type: string
                     description: 格式化后的查询结果文本
 
-components:
-  schemas:
-    ProjectItem:
-      type: object
-      properties:
-        id:
-          type: string
-          description: 项目ID
-        name:
-          type: string
-          description: 项目简称
-        fullName:
-          type: string
-          description: 项目全称
-        company:
-          type: string
-          enum: [凡高, 文森特]
-          description: 所属公司
 
-    SingleResult:
-      type: object
-      properties:
-        type:
-          type: string
-          enum: [single]
-        project:
-          $ref: '#/components/schemas/ProjectItem'
-        result:
-          type: string
-          description: 格式化后的查询结果文本
-
-    MultipleResult:
-      type: object
-      properties:
-        type:
-          type: string
-          enum: [multiple]
-        projects:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProjectItem'
-          description: 匹配到的项目列表，需让用户选择
-
-    NotFoundResult:
-      type: object
-      properties:
-        type:
-          type: string
-          enum: [not_found]
-        message:
-          type: string
-          description: 未找到项目的提示信息
 

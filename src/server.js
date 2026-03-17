@@ -12,6 +12,16 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 
+const QUERY_TYPE_MAP = {
+  invoice: 'invoice', payment: 'payment', cost: 'cost',
+  开票: 'invoice', 回款: 'payment', 成本: 'cost',
+};
+
+const COMPANY_MAP = {
+  凡高: '凡高', fangao: '凡高', Fangao: '凡高', FanGao: '凡高',
+  文森特: '文森特', vincent: '文森特', Vincent: '文森特',
+};
+
 /**
  * 健康检查
  * GET /health
@@ -47,14 +57,12 @@ app.get('/projects', async (req, res) => {
  *   - queryType: "invoice" | "payment" | "cost"
  */
 app.post('/query/detail', async (req, res) => {
-  const { projectId, company } = req.body;
+  const { projectId } = req.body;
   const queryType = QUERY_TYPE_MAP[req.body.queryType];
+  const company = COMPANY_MAP[req.body.company];
 
   if (!projectId || !company || !queryType) {
-    return res.status(400).json({ error: '缺少参数，需要 projectId、company、queryType（invoice/payment/cost 或 开票/回款/成本）' });
-  }
-  if (!['凡高', '文森特'].includes(company)) {
-    return res.status(400).json({ error: 'company 只能是 "凡高" 或 "文森特"' });
+    return res.status(400).json({ error: '缺少参数，需要 projectId、company（凡高/文森特）、queryType（invoice/payment/cost）' });
   }
 
   try {
@@ -76,11 +84,6 @@ app.post('/query/detail', async (req, res) => {
  * 当只匹配到一个项目时直接返回结果；
  * 匹配到多个时返回项目列表供用户选择。
  */
-const QUERY_TYPE_MAP = {
-  invoice: 'invoice', payment: 'payment', cost: 'cost',
-  开票: 'invoice', 回款: 'payment', 成本: 'cost',
-};
-
 app.post('/query/search', async (req, res) => {
   const { keyword } = req.body;
   const queryType = QUERY_TYPE_MAP[req.body.queryType];

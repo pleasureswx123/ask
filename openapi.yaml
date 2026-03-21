@@ -1,9 +1,50 @@
 info:
-    description: 查询凡高和文森特项目的开票、回款、成本情况
+    description: 查询凡高和文森特项目的开票、回款、成本、利润情况
     title: 项目信息查询服务
-    version: v1
+    version: v2
 openapi: 3.0.1
 paths:
+    /auth/scope:
+        get:
+            operationId: getAuthScope
+            parameters:
+                - in: query
+                  name: memberId
+                  required: false
+                  schema:
+                      type: string
+                  description: 人员ID，跨域时 cookie 无法携带时通过此参数传递，与 cookie 中的 avatarImageUrl 值相同
+            responses:
+                "200":
+                    content:
+                        application/json:
+                            schema:
+                                properties:
+                                    companyScope:
+                                        description: 可查看的公司范围，0=全部，1=仅凡高，2=仅文森特
+                                        type: integer
+                                        enum: [0, 1, 2]
+                                type: object
+                    description: 查询成功
+                "401":
+                    content:
+                        application/json:
+                            schema:
+                                properties:
+                                    error:
+                                        type: string
+                                type: object
+                    description: 未获取到人员身份
+                "403":
+                    content:
+                        application/json:
+                            schema:
+                                properties:
+                                    error:
+                                        type: string
+                                type: object
+                    description: 无权限查看任何公司项目
+            summary: 查询当前人员可查看的公司范围
     /query/search:
         post:
             operationId: searchAndQuery
@@ -16,8 +57,12 @@ paths:
                                     description: 项目关键词，如大连紫悦府
                                     type: string
                                 queryType:
-                                    description: 查询类型，必须传英文值，invoice=开票，payment=回款，cost=成本，只能传invoice或payment或cost
+                                    description: 查询类型，必须传英文值，invoice=开票，payment=回款，cost=成本，profit=利润
                                     type: string
+                                companyScope:
+                                    description: 公司范围，0=全部（默认），1=仅凡高，2=仅文森特，从 /auth/scope 接口获取
+                                    type: integer
+                                    enum: [0, 1, 2]
                             type: object
             responses:
                 "200":
@@ -80,7 +125,7 @@ paths:
                                     description: 所属公司，凡高或文森特
                                     type: string
                                 queryType:
-                                    description: 查询类型，必须传英文值，invoice=开票，payment=回款，cost=成本，只能传invoice或payment或cost
+                                    description: 查询类型，必须传英文值，invoice=开票，payment=回款，cost=成本，profit=利润
                                     type: string
                             type: object
             responses:

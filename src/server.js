@@ -13,8 +13,8 @@ app.use(express.json());
 const PORT = process.env.PORT || 3000;
 
 const QUERY_TYPE_MAP = {
-  invoice: 'invoice', payment: 'payment', cost: 'cost',
-  开票: 'invoice', 回款: 'payment', 成本: 'cost',
+  invoice: 'invoice', payment: 'payment', cost: 'cost', profit: 'profit',
+  开票: 'invoice', 回款: 'payment', 成本: 'cost', 利润: 'profit',
 };
 
 const COMPANY_MAP = {
@@ -22,12 +22,67 @@ const COMPANY_MAP = {
   文森特: '文森特', vincent: '文森特', Vincent: '文森特',
 };
 
+// 各公司可查看人员 ID 集合（avatarImageUrl cookie 值）
+const FANGAO_MEMBERS  = new Set(['6676269582040844867', '-3309927987368277301', '-4569568685448475789', '-1577376760741084847', '7525471032519182589', '-6266408735092551688']);
+const WUSENTE_MEMBERS = new Set(['6676269582040844867', '-8979920820177776653', '-4569568685448475789', '-1577376760741084847', '7525471032519182589', '3639139703738680197', '2881187117907003637']);
+
+/**
+ * 解析人员 ID，优先取 query/body 中的 memberId 参数，
+ * 跨域 cookie 带不过来时可通过此参数显式传递；
+ * 兜底从 cookie 的 avatarImageUrl 字段读取。
+ */
+function parseMemberId(req) {
+  const explicit = (req.query.memberId || req.body?.memberId || '').trim();
+  if (explicit) return explicit;
+
+  return (req.headers.cookie || '')
+    .split('; ')
+    .find(row => row.startsWith('avatarImageUrl='))
+    ?.split('=')[1]
+    ?.trim() || '';
+}
+
 /**
  * 健康检查
  * GET /health
  */
+
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
+});
+
+/**
+ * 权限查询接口
+ * GET /auth/scope
+ * 根据请求 cookie 中的 avatarImageUrl（人员ID）返回可查看的公司范围
+ * 返回：{ companyScope: 0 | 1 | 2 }
+ *   0 = 全部（凡高 + 文森特）
+ *   1 = 仅凡高
+ *   2 = 仅文森特
+ */
+app.get('/auth/scope', (req, res) => {
+  const memberId = parseMemberId(req);
+  if (!memberId) {
+    return res.status(401).json({ error: '未获取到人员身份，请确认 cookie 中包含 avatarImageUrl' });
+  }
+
+  const inFangao  = FANGAO_MEMBERS.has(memberId);
+  const inWusente = WUSENTE_MEMBERS.has(memberId);
+
+  if (!inFangao && !inWusente) {
+    return res.status(403).json({ error: '无权限查看任何公司项目' });
+  }
+
+  let companyScope;
+  if (inFangao && inWusente) {
+    companyScope = 0;
+  } else if (inFangao) {
+    companyScope = 1;
+  } else {
+    companyScope = 2;
+  }
+
+  res.json({ companyScope });
 });
 
 /**
@@ -37,11 +92,12 @@ app.get('/health', (req, res) => {
  */
 app.get('/projects', async (req, res) => {
   const { keyword } = req.query;
+  const companyScope = Number(req.query.companyScope) || 0;
   if (!keyword) {
     return res.status(400).json({ error: '缺少参数 keyword' });
   }
   try {
-    const projects = await searchProjects(keyword);
+    const projects = await searchProjects(keyword, companyScope);
     res.json({ projects });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -87,13 +143,14 @@ app.post('/query/detail', async (req, res) => {
 app.post('/query/search', async (req, res) => {
   const { keyword } = req.body;
   const queryType = QUERY_TYPE_MAP[req.body.queryType];
+  const companyScope = Number(req.body.companyScope) || 0;
 
   if (!keyword || !queryType) {
     return res.status(400).json({ error: '缺少参数，需要 keyword 和 queryType（invoice/payment/cost 或 开票/回款/成本）' });
   }
 
   try {
-    const projects = await searchProjects(keyword);
+    const projects = await searchProjects(keyword, companyScope);
 
     if (projects.length === 0) {
       return res.json({ type: 'not_found', message: `未找到包含"${keyword}"的项目` });

@@ -9,6 +9,12 @@ function fmtStr(val) {
   return (val && String(val).trim()) || '暂无数据';
 }
 
+/** 格式化百分比：null 显示为"暂无数据"，否则乘以100保留两位小数并加 % */
+function fmtPct(val) {
+  if (val === null || val === undefined) return '暂无数据';
+  return (Number(val) * 100).toFixed(2) + '%';
+}
+
 function formatInvoice(data) {
   return [
     `项目简称：${fmtStr(data['项目简称'])}`,
@@ -58,12 +64,31 @@ function formatCost(data) {
   ].join('\n');
 }
 
+function formatProfit(data) {
+  return [
+    `项目简称：${fmtStr(data['项目简称'])}`,
+    `项目类型：${fmtStr(data['项目类型'])}`,
+    `客户名称：${fmtStr(data['客户名称'])}`,
+    `项目状态：${fmtStr(data['项目状态'])}`,
+    `项目经理：${fmtStr(data['项目经理'])}`,
+    `合同金额：${fmt(data['合同金额'])}`,
+    `除税报价：${fmt(data['除税报价'])}`,
+    `是否结算：${fmtStr(data['是否结算'])}`,
+    `完工进度：${fmtPct(data['完工进度'])}`,
+    `目标利润：${fmt(data['目标利润'])}`,
+    `目标利润率：${fmtPct(data['目标利润率'])}`,
+    `项目利润：${fmt(data['项目利润'])}`,
+    `项目利润率：${fmtPct(data['项目利润率'])}`,
+  ].join('\n');
+}
+
 /** 根据查询类型格式化输出 */
 export function formatResult(queryType, data) {
   switch (queryType) {
     case 'invoice': return formatInvoice(data);
     case 'payment': return formatPayment(data);
     case 'cost':    return formatCost(data);
+    case 'profit':  return formatProfit(data);
     default:        return JSON.stringify(data, null, 2);
   }
 }

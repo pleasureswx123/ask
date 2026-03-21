@@ -12,6 +12,7 @@ const QUERY_TYPE_LABEL = {
   invoice: '开票情况',
   payment: '回款情况',
   cost:    '成本情况',
+  profit:  '利润情况',
   unknown: '未知查询',
 };
 

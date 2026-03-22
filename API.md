@@ -60,6 +60,28 @@ GET /auth/scope?memberId=6676269582040844867
 
 ---
 
+## POST /intent
+
+从自然语言中识别项目关键词和查询类型。
+
+| 参数 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| text | string | ✅ | 用户输入的自然语言 |
+
+**请求**
+```json
+{ "text": "大连紫悦府精装项目开票情况怎么样？" }
+```
+
+**响应**
+```json
+{ "projectKeyword": "大连紫悦府精装", "queryType": "invoice" }
+```
+
+**queryType 取值**：`invoice` / `payment` / `cost` / `profit` / `unknown`
+
+---
+
 ## GET /projects
 
 模糊搜索项目列表。

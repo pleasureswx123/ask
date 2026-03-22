@@ -45,6 +45,38 @@ paths:
                                 type: object
                     description: 无权限查看任何公司项目
             summary: 查询当前人员可查看的公司范围
+    /intent:
+        post:
+            operationId: recognizeIntent
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            properties:
+                                text:
+                                    description: 用户输入的自然语言，如"大连紫悦府精装项目开票情况怎么样？"
+                                    type: string
+                            required:
+                                - text
+                            type: object
+            responses:
+                "200":
+                    content:
+                        application/json:
+                            schema:
+                                properties:
+                                    projectKeyword:
+                                        description: 提取出的项目关键词
+                                        type: string
+                                    queryType:
+                                        description: 查询类型，invoice=开票，payment=回款，cost=成本，profit=利润，unknown=无法识别
+                                        type: string
+                                        enum: [invoice, payment, cost, profit, unknown]
+                                type: object
+                    description: 识别成功
+                default:
+                    description: ""
+            summary: 从自然语言中识别项目关键词和查询类型
     /query/search:
         post:
             operationId: searchAndQuery

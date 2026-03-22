@@ -1,5 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import { recognizeIntent } from './agent/intent.js';
 import { searchProjects } from './agent/search.js';
 import { executeQuery } from './agent/query.js';
 import { formatResult } from './agent/formatter.js';
@@ -83,6 +84,25 @@ app.get('/auth/scope', (req, res) => {
   }
 
   res.json({ companyScope });
+});
+
+/**
+ * 意图识别接口
+ * POST /intent
+ * Body: { text }
+ * 从自然语言中提取项目关键词和查询类型
+ */
+app.post('/intent', async (req, res) => {
+  const { text } = req.body;
+  if (!text) {
+    return res.status(400).json({ error: '缺少参数 text' });
+  }
+  try {
+    const result = await recognizeIntent(text);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 /**
@@ -177,6 +197,8 @@ app.post('/query/search', async (req, res) => {
 const server = app.listen(PORT, "0.0.0.0", () => {
   console.log(`✅ 项目信息查询服务已启动：http://localhost:${PORT}`);
   console.log(`   GET  /health          健康检查`);
+  console.log(`   GET  /auth/scope      权限查询`);
+  console.log(`   POST /intent          意图识别`);
   console.log(`   GET  /projects        搜索项目列表`);
   console.log(`   POST /query/search    一体化查询（Coze 推荐）`);
   console.log(`   POST /query/detail    按项目ID精确查询`);
